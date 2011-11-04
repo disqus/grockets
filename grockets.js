@@ -73,7 +73,7 @@ function MetricHandler(socket, targets, from, updateInterval) {
   this.shouldUpdate = function() {
     if ((lastUpdateTime + updateInterval) < new Date().getTime()) {
       if (lastUpdateTime > 0) {
-        queryParameters.from = Math.floor((new Date().getTime() - (updateInterval * 1.5)) / 1000);
+        queryParameters.from = Math.floor((new Date().getTime() - (updateInterval * 2)) / 1000);
       }
       return(true);
     } else {
