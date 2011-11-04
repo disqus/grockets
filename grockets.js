@@ -6,7 +6,7 @@ var graphiteHost = 'CHANGE-ME-YOU-NOOB';
 function buildQueryString(parameters) {
   var queryParameters = new Array;
 
-  parameters.targets.map(function(target) {
+  parameters.targets.forEach(function(target) {
     queryParameters.push('target=' + target);
   });
 
