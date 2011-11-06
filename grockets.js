@@ -4,6 +4,11 @@ var io = require('socket.io').listen(8000),
 var graphiteHost = 'CHANGE-ME-YOU-NOOB',
   handlers = [];
 
+io.enable('browser client minification');
+io.enable('browser client etag');
+io.enable('browser client gzip');
+io.set('log level', 1);
+
 function buildQueryString(parameters) {
   'use strict';
   var queryParameters = [];
