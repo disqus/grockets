@@ -4,7 +4,7 @@ var io = require('socket.io').listen(8000)
 var graphiteHost = 'CHANGE-ME-YOU-NOOB';
 
 function buildQueryString(parameters) {
-  var queryParameters = new Array;
+  var queryParameters = [];
 
   parameters.targets.forEach(function(target) {
     queryParameters.push('target=' + target);
@@ -20,7 +20,7 @@ function processHandlers() {
   handlers.map(function(handler) {
     if (handler.shouldUpdate()) {
       handler.data(function(data) {
-        handler.socket.emit('metricData', data);
+        handler.socket.emit('metricData', {id: handler.id, metrics: data});
       });
     }
   });
@@ -28,17 +28,17 @@ function processHandlers() {
   setTimeout(processHandlers, 1000);
 }
 
-function MetricHandler(socket, targets, from, updateInterval) {
+function MetricHandler(id, socket, targets, from, updateInterval) {
+  var from = typeof(from) != 'undefined' ? from : '-24h',
+    lastUpdateTime = 0,
+    updateInterval = typeof(updateInterval) != 'undefined' ? updateInterval : 5000,
+    queryParameters = {
+      'targets': targets,
+      'from': from
+    };
+
+  this.id = id;
   this.socket = socket;
-
-  from = typeof(from) != 'undefined' ? from : '-24h';
-  updateInterval = typeof(updateInterval) != 'undefined' ? updateInterval : 5000;
-
-  var lastUpdateTime = 0;
-  var queryParameters = {
-    'targets': targets,
-    'from': from
-  };
 
   this.addTarget = function(target) {
     queryParameters.targets.push(target);
@@ -51,12 +51,11 @@ function MetricHandler(socket, targets, from, updateInterval) {
 
   this.data = function(callback) {
     var httpOptions = {
-      host: graphiteHost,
-      port: 80,
-      path: '/render?' + buildQueryString(queryParameters)
-    };
-
-    var metricData = new String;
+        host: graphiteHost,
+        port: 80,
+        path: '/render?' + buildQueryString(queryParameters)
+      },
+      metricData = '';
 
     http.get(httpOptions, function(res) {
       res.on('data', function(chunk) {
@@ -82,11 +81,11 @@ function MetricHandler(socket, targets, from, updateInterval) {
   }
 }
 
-var handlers = new Array;
+var handlers = [];
 
 io.sockets.on('connection', function(socket) {
   socket.on('fetchMetrics', function(queryData) {
-    handlers.push(new MetricHandler(socket, queryData.targets, queryData.from, queryData.updateInterval));
+    handlers.push(new MetricHandler(queryData.id, socket, queryData.targets, queryData.from, queryData.updateInterval));
   }).on('addTarget', function(target) {
     handlers.forEach(function(handler) {
       if (handler.socket == socket) {
