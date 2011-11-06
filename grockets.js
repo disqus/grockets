@@ -41,7 +41,7 @@ function MetricHandler(socket, params) {
       'from': from
     };
 
-  this.id = id;
+  this.id = params.id;
   this.socket = socket;
 
   this.addTarget = function(target) {
