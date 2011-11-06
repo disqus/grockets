@@ -31,13 +31,13 @@ function processHandlers() {
   setTimeout(processHandlers, 1000);
 }
 
-function MetricHandler(id, socket, targets, from, updateInterval) {
+function MetricHandler(socket, params) {
   'use strict';
-  var from = typeof(from) !== 'undefined' ? from : '-24h',
+  var from = typeof(params.from) !== 'undefined' ? params.from : '-24h',
     lastUpdateTime = 0,
-    updateInterval = typeof(updateInterval) !== 'undefined' ? updateInterval : 5000,
+    updateInterval = typeof(params.updateInterval) !== 'undefined' ? params.updateInterval : 5000,
     queryParameters = {
-      'targets': targets,
+      'targets': params.targets,
       'from': from
     };
 
@@ -87,8 +87,8 @@ function MetricHandler(id, socket, targets, from, updateInterval) {
 
 io.sockets.on('connection', function(socket) {
   'use strict';
-  socket.on('fetchMetrics', function(queryData) {
-    handlers.push(new MetricHandler(queryData.id, socket, queryData.targets, queryData.from, queryData.updateInterval));
+  socket.on('fetchMetrics', function(params) {
+    handlers.push(new MetricHandler(socket, params));
   }).on('addTarget', function(target) {
     handlers.forEach(function(handler) {
       if (handler.socket === socket) {
