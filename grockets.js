@@ -38,12 +38,10 @@ function processHandlers() {
 
 function MetricHandler(socket, params) {
   'use strict';
-  var from = typeof(params.from) !== 'undefined' ? params.from : '-24h',
-    lastUpdateTime = 0,
-    updateInterval = typeof(params.updateInterval) !== 'undefined' ? params.updateInterval : 5000,
+  var lastUpdateTime = 0,
     queryParameters = {
       'targets': params.targets,
-      'from': from
+      'from': params.from
     };
 
   this.id = params.id;
@@ -79,9 +77,9 @@ function MetricHandler(socket, params) {
   };
 
   this.shouldUpdate = function() {
-    if ((lastUpdateTime + updateInterval) < new Date().getTime()) {
+    if ((params.refresh === true && (lastUpdateTime + params.updateInterval < new Date().getTime())) || lastUpdateTime === 0) {
       if (lastUpdateTime > 0) {
-        queryParameters.from = Math.floor((lastUpdateTime - (updateInterval * 3)) / 1000);
+        queryParameters.from = Math.floor((lastUpdateTime - (params.updateInterval * 3)) / 1000);
       }
       return(true);
     } else {
